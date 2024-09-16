@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Word Exploration App</title>
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+  <div class="container">
+    <h1>Word Exploration App</h1>
+    <div class="search-container">
+      <input type="text" id="wordInput" placeholder="Enter a word">
+      <button id="searchButton">Search</button>
+    </div>
+
+    <div id="wordDetails" class="word-details hidden">
+      <h2 id="wordTitle"></h2>
+
+      <div id="dictionarySection" class="section">
+        <h3>Dictionary</h3>
+        <div id="partOfSpeechContainer" class="pos-container"></div>
+        <div id="definitionContainer" class="definition-container"></div>
+      </div>
+
+      <div id="thesaurusSection" class="section">
+        <h3>Thesaurus</h3>
+        <div id="thesaurusContainer" class="thesaurus-container"></div>
+      </div>
+
+      <div id="etymologySection" class="section">
+        <h3>Latin Roots and Breakdown</h3>
+        <div id="etymologyContainer" class="etymology-container"></div>
+      </div>
+
+      <div id="aiDescriptionSection" class="section">
+        <h3>AI Description</h3>
+        <div id="aiDescriptionContainer"></div>
+      </div>
+
+      <div id="aiImageSection" class="section">
+        <h3>AI Image</h3>
+        <div id="aiImageContainer"></div>
+      </div>
+    </div>
+  </div>
+
+  <script src="js/index.js"></script>
+</body>
+</html>
+
