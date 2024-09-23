@@ -7,7 +7,6 @@ document.getElementById('searchButton').addEventListener('click', function() {
   }
 });
 
-// Allow pressing Enter key to search
 document.getElementById('wordInput').addEventListener('keypress', function(e) {
   if (e.key === 'Enter') {
     document.getElementById('searchButton').click();
@@ -16,30 +15,21 @@ document.getElementById('wordInput').addEventListener('keypress', function(e) {
 
 async function fetchWordData(word) {
   try {
-    // Fetch data from Dictionary API
     const dictionaryResponse = await fetch(`https://api.dictionaryapi.dev/api/v2/entries/en/${word}`);
     const dictionaryData = dictionaryResponse.ok ? await dictionaryResponse.json() : null;
 
-    // Fetch data from Thesaurus API
     const thesaurusResponse = await fetch(`https://api.datamuse.com/words?rel_syn=${word}`);
     const thesaurusData = await thesaurusResponse.json();
 
     if (!dictionaryData && (!thesaurusData || thesaurusData.length === 0)) {
-      throw new Error('Word not found. Please try another word.');
+      alert('Word not found.');
+      // throw new Error('Word not found. Please try another word.');
+    } else {
+      displayResults(word, dictionaryData, thesaurusData);
+      fetchAIDescription(word);
+      fetchAIImage(word);
+      fetchLatinRoots(word);
     }
-
-    // Display results
-    displayResults(word, dictionaryData, thesaurusData);
-
-    // Fetch AI description
-    fetchAIDescription(word);
-
-    // Fetch AI image
-    fetchAIImage(word);
-
-    // Fetch Latin roots and breakdown
-    fetchLatinRoots(word);
-
   } catch (error) {
     console.error(error);
     displayError(error.message);
@@ -53,19 +43,38 @@ function displayError(message) {
 }
 
 function displayResults(word, dictionaryData, thesaurusData) {
+  const errorContainer = document.getElementById('errorContainer');
+  if (errorContainer) errorContainer.innerHTML = '';
+
   const wordDetails = document.getElementById('wordDetails');
+  if (!wordDetails) {
+    console.error('Error: wordDetails element not found in the DOM.');
+    return;
+  }
+
   wordDetails.classList.remove('hidden');
 
-  // Display the word
-  const wordTitle = document.getElementById('wordTitle');
-  wordTitle.textContent = word;
+  let wordTitle = document.getElementById('wordTitle');
+  if (!wordTitle) {
+    wordTitle = document.createElement('h2');
+    wordTitle.id = 'wordTitle';
+    wordDetails.appendChild(wordTitle);
+  }
 
-  // Display parts of speech
-  const posContainer = document.getElementById('partOfSpeechContainer');
-  posContainer.innerHTML = '';
+  let posContainer = document.getElementById('partOfSpeechContainer');
+  if (!posContainer) {
+    posContainer = document.createElement('div');
+    posContainer.id = 'partOfSpeechContainer';
+    wordDetails.appendChild(posContainer);
+  } else {
+    posContainer.innerHTML = ''; // Clear previous content
+  }
+
+  wordTitle.textContent = word;
 
   if (dictionaryData && dictionaryData[0] && dictionaryData[0].meanings) {
     const meanings = dictionaryData[0].meanings;
+
     meanings.forEach((meaning, index) => {
       const posButton = document.createElement('button');
       posButton.textContent = meaning.partOfSpeech;
@@ -79,14 +88,15 @@ function displayResults(word, dictionaryData, thesaurusData) {
       posContainer.appendChild(posButton);
     });
 
-    // Display definitions for the first part of speech
     displayDefinitions(meanings[0]);
   } else {
     posContainer.innerHTML = '<p>No definitions found.</p>';
-    document.getElementById('definitionContainer').innerHTML = '';
+    const definitionContainer = document.getElementById('definitionContainer');
+    if (definitionContainer) {
+      definitionContainer.innerHTML = '';
+    }
   }
 
-  // Display thesaurus data
   displayThesaurus(thesaurusData);
 }
 
@@ -160,6 +170,7 @@ function fetchAIDescription(word) {
   })
   .catch(error => {
     console.error('Error fetching AI description:', error);
+    console.log('FAILED WORD:', word);
     const aiDescriptionContainer = document.getElementById('aiDescriptionContainer');
     aiDescriptionContainer.innerHTML = '<p>Error fetching AI description.</p>';
   });

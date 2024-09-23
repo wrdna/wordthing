@@ -7,6 +7,7 @@ dotenv.config();
 
 const app = express();
 const port = 3003;
+const chatmodel = 'gpt-4o-mini';
 
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY // This is also the default, can be omitted
@@ -27,12 +28,12 @@ app.get('/berg/wordthing/*', (req, res) => {
 app.post('/berg/api/description', async (req, res) => {
   const word = req.body.word;
   try {
-    const response = await openai.createCompletion({
-      model: 'text-davinci-003',
-      prompt: `Provide a detailed description and usage of the word "${word}".`,
-      max_tokens: 150,
+    const response = await openai.chat.completions.create({
+      model: chatmodel,
+      messages: [{"role": "user", "content": `Provide a detailed description and usage of the word "${word}". DO NOT FORMAT WITH MARKDOWN. USE LESS THAN 150 WORDS`}],
+      max_tokens: 200,
     });
-    res.json({ description: response.data.choices[0].text.trim() });
+    res.json({ description: response.choices[0].message.content });
   } catch (error) {
     console.error('Error fetching AI description:', error);
     res.status(500).json({ error: 'Failed to get AI description' });
@@ -43,12 +44,12 @@ app.post('/berg/api/description', async (req, res) => {
 app.post('/berg/api/image', async (req, res) => {
   const word = req.body.word;
   try {
-    const response = await openai.createImage({
-      prompt: `An illustrative image representing the word "${word}".`,
-      n: 1,
-      size: '512x512',
+    const response = await openai.images.generate({
+      prompt: `illustrate "${word}".`,
+      model: 'dall-e-3',
+      size: '1024x1024',
     });
-    res.json({ imageUrl: response.data.data[0].url });
+    res.json({ imageUrl: response.data[0].url });
   } catch (error) {
     console.error('Error fetching AI image:', error);
     res.status(500).json({ error: 'Failed to get AI image' });
@@ -59,12 +60,13 @@ app.post('/berg/api/image', async (req, res) => {
 app.post('/berg/api/latin-roots', async (req, res) => {
   const word = req.body.word;
   try {
-    const response = await openai.createCompletion({
-      model: 'text-davinci-003',
-      prompt: `Provide the Latin roots and word breakdown for the word "${word}".`,
-      max_tokens: 150,
+    const response = await openai.chat.completions.create({
+      model: chatmodel,
+      messages: [{"role": "user", "content": `Provide the Latin roots and word breakdown for the word "${word}". Under 20 words. Give no examples.`}],
+      max_tokens: 100,
     });
-    res.json({ roots: response.data.choices[0].text.trim() });
+    //  console.log(response.choices[0].message.content)
+    res.json({ roots: response.choices[0].message.content });
   } catch (error) {
     console.error('Error fetching Latin roots:', error);
     res.status(500).json({ error: 'Failed to get Latin roots' });
